@@ -43,13 +43,16 @@ class LinearRegression_OLS:
     #are; RMSE is a measure of how spread out these residuals 
     #are. In other words, it tells you how concentrated the 
     #data is around the line of best fit. 
+    def mean_squared_error(self,y, y_pred):
+        return np.mean((y - y_pred)**2)
+
     def root_mean_squared_error(self, test_x, test_y):
-        rmse = 0
+        mse = 0
         for i in range(self.data_length):
             pred_y =  self.b + self.m* test_x[i]
-            rmse += (test_y[i] - pred_y) ** 2
+            mse += (test_y[i] - pred_y) ** 2
             
-        rmse = np.sqrt(rmse/self.data_length)
+        rmse = np.sqrt(mse/self.data_length)
         return rmse
 
     # SST = Total sum of squares 
@@ -67,3 +70,31 @@ class LinearRegression_OLS:
         score  = 1 - (sr/ss)
 
 
+class LinearRegression_Gradient_Descent:
+    def __init__(self, learning_rate, n_iters):
+        self.lr = learning_rate
+        self.epochs = n_iters
+        self.m = None
+        self.b = 0
+        data_length = 0
+
+    #Gradient Descent
+    def fit(self, x_Vals, y_Vals):
+        rows, cols = x_Vals.shape
+        self.m = np.zeros(cols)
+        data_length = len(x_Vals)
+        
+        for _ in range(self.epochs): 
+            pred_y = np.dot(x_Vals,self.m) + self.b
+            Deriv_m = (-2/data_length) * np.dot(x_Vals.T,(y_Vals - pred_y)) 
+            Deriv_b = (-2/data_length) * np.sum( y_Vals - pred_y) 
+            self.m = self.m - (self.lr * Deriv_m)  
+            self.b = self.b - (self.lr * Deriv_b)  
+        
+        return self.m,self.b
+       
+    def mean_squared_error(self,y, y_pred):
+        return np.mean((y - y_pred)**2)
+
+    def predict(self,x):
+        return np.dot(x,self.m) + self.b
